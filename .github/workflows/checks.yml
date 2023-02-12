@@ -1,0 +1,55 @@
+name: Run skillyard checks
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository_name:
+        required: true
+        type: string
+        description: The name of the repository, so we can CD into the folder
+      vercel_url:
+        required: true
+        type: string
+        description: 'Vercel url of latest deployment for end to end tests'
+      upload_playwright_results_url:
+        required: true
+        type: string
+        description: 'Url to upload JSON test results to'
+      checks_completed_url:
+        required: true
+        type: string
+        description: 'Webhook to inform skillyard that checks are complete'
+
+jobs:
+  skillyard-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Install node v18.12.0
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.12.0
+      - name: Download Skillyard test repository
+        run: |
+          git clone https://github.com/skillyard-io/tests.git skillyard-io-tests
+          ls -la
+      - name: Run solution
+        run: /
+          cp skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal/run/Dockerfile ./${{ inputs.repository_name }}/
+          docker build -t contentful-customer-registration-portal:v1
+          docker run -d -p 8081:80 contentful-customer-registration-portal:v1
+      - name: Setup and run skillyard tests repository
+        run: |
+          cd skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal
+          yarn
+          yarn playwright install --with-deps
+          export PLAYWRIGHT_SERVER_HOST=http://127.0.0.1:8081
+          yarn playwright test || :
+      - name: Upload skillyard test results to skillyard
+        run: |
+          ls -la
+          cd skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal
+          curl -d @skillyard-io-playwright-test-results.json ${{ inputs.upload_playwright_results_url }} -H 'Content-Type: application/json'
+      - name: Notify skillyard that checks are completed
+        run: curl ${{ inputs.checks_completed_url }}
