@@ -50,6 +50,13 @@ jobs:
           path: |
             skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal/node_modules
           key: test-repository-dependencies
+      - name: Get Playwright browsers cache
+        uses: actions/cache@v3
+        id: playwright-cache
+        with:
+          path: |
+            ~/.cache/ms-playwright
+          key: playwright-browsers
       - name: Setup and run skillyard tests repository
         run: |
           cd skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal
