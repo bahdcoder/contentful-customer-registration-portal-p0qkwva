@@ -30,8 +30,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.12.0
-          cache: 'yarn'
-          cache-dependency-path: yarn.lock
+      - name: Get node version
+        id: node
+        run: |
+          echo "::set-output name=version::$(node -v)"
       - name: Download Skillyard test repository
         run: |
           git clone https://github.com/skillyard-io/tests.git skillyard-io-tests
@@ -41,6 +43,13 @@ jobs:
           cp skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal/run/Dockerfile .
           docker build -t contentful-customer-registration-portal:v1 .
           docker run -d -p 8081:80 contentful-customer-registration-portal:v1
+      - name: Get node_modules cache
+        uses: actions/cache@v3.0.2
+        id: node_modules
+        with:
+          path: |
+            skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal/node_modules
+          key: test-repository-dependencies
       - name: Setup and run skillyard tests repository
         run: |
           cd skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal
