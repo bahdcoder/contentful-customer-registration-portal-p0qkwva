@@ -57,11 +57,18 @@ jobs:
           path: |
             ~/.cache/ms-playwright
           key: playwright-browsers
-      - name: Setup and run skillyard tests repository
+      - name: Install skillyard tests dependencies
         run: |
           cd skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal
           yarn
+      - name: Install playwright dependencies
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: |
+          cd skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal
           yarn playwright install --with-deps
+      - name: Run playwright tests
+        run: |
+          cd skillyard-io-tests/react-frontend-engineer/stages/fundamentals-of-web-technologies/contentful-customer-registration-portal
           export PLAYWRIGHT_SERVER_HOST=http://127.0.0.1:8081
           yarn playwright test || :
       - name: Upload skillyard test results to skillyard
