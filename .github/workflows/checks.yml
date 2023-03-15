@@ -30,7 +30,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18.12.0
-          cache: 'yarn'
       - name: Get node version
         id: node
         run: |
